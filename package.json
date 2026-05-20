@@ -1,0 +1,33 @@
+{
+  "name": "nodejsesgi",
+  "version": "1.0.0",
+  "description": "Projet nodeJS ESGI M1 IW",
+  "homepage": "https://github.com/Gab1TN/nodeJSesgi#readme",
+  "bugs": {
+    "url": "https://github.com/Gab1TN/nodeJSesgi/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gab1TN/nodeJSesgi.git"
+  },
+  "license": "ISC",
+  "author": "ego, mcl, gto",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "start": "nodemon src/index.ts"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "sqlite3": "^6.0.1",
+    "typeorm": "^1.0.0",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.1",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2"
+  }
+}
