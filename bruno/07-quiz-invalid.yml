@@ -1,0 +1,27 @@
+info:
+  name: 07 Quiz Invalid
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: http://localhost:3000/api/quizzes
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Hi"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 400 on quiz validation", function() {
+          expect(res.status).to.equal(400);
+        });

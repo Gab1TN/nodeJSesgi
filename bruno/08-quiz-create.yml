@@ -1,0 +1,28 @@
+info:
+  name: 08 Quiz Create
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: http://localhost:3000/api/quizzes
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Quiz Bruno",
+        "description": "Validation ok"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 201", function() {
+          expect(res.status).to.equal(201);
+        });

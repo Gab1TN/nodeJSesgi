@@ -1,0 +1,30 @@
+info:
+  name: 04 Login Success
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: http://localhost:3000/api/users/login
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{testEmail}}",
+        "password": "secret123"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 200", function() {
+          expect(res.status).to.equal(200);
+        });
+        test("token returned", function() {
+          expect(res.body.token).to.be.a("string");
+          bru.setVar("token", res.body.token);
+        });

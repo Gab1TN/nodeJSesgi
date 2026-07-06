@@ -1,0 +1,35 @@
+info:
+  name: 01 Register
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:3000/api/users/register
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{testEmail}}",
+        "password": "secret123",
+        "firstName": "Bruno",
+        "lastName": "Test"
+      }
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        bru.setVar("testEmail", `bruno_${Date.now()}@test.local`);
+    - type: tests
+      code: |-
+        test("status 201", function() {
+          expect(res.status).to.equal(201);
+        });
+        test("verification link returned", function() {
+          expect(res.body.verificationLink).to.be.a("string");
+          bru.setVar("verificationLink", res.body.verificationLink);
+        });

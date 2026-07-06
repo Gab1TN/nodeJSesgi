@@ -1,0 +1,26 @@
+info:
+  name: 06 Register Invalid
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: http://localhost:3000/api/users/register
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "email": "not-an-email",
+        "password": "123"
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 400 on validator", function() {
+          expect(res.status).to.equal(400);
+        });

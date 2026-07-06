@@ -1,12 +1,12 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { IsEmail, IsEnum, Length } from 'class-validator';
+import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { IsEmail, IsEnum, Length } from "class-validator";
 
 export enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin',
+  USER = "user",
+  ADMIN = "admin",
 }
 
-@Entity('users')
+@Entity("users")
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -27,7 +27,7 @@ export class User extends BaseEntity {
   @Length(1, 50)
   lastName?: string;
 
-  @Column({ type: 'text', default: UserRole.USER })
+  @Column({ type: "text", default: UserRole.USER })
   @IsEnum(UserRole)
   role: UserRole;
 

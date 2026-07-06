@@ -1,0 +1,22 @@
+info:
+  name: 05 Me
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: http://localhost:3000/api/users/me
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 200", function() {
+          expect(res.status).to.equal(200);
+        });
+        test("same email as register", function() {
+          expect(res.body.email).to.equal(bru.getVar("testEmail"));
+        });

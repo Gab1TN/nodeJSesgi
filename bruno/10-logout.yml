@@ -1,0 +1,16 @@
+info:
+  name: 10 Logout
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: http://localhost:3000/api/users/logout
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 200", function() {
+          expect(res.status).to.equal(200);
+        });
