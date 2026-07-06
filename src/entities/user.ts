@@ -27,12 +27,18 @@ export class User extends BaseEntity {
   @Length(1, 50)
   lastName?: string;
 
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  @Column({ type: 'text', default: UserRole.USER })
   @IsEnum(UserRole)
   role: UserRole;
 
   @Column({ default: true })
   isActive: boolean;
+
+  @Column({ default: false })
+  emailVerified: boolean;
+
+  @Column({ nullable: true })
+  verificationToken?: string;
 
   @CreateDateColumn()
   createdAt: Date;
