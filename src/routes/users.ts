@@ -2,9 +2,11 @@
 import bcrypt from "bcryptjs";
 import { validate } from "class-validator";
 import { randomBytes } from "crypto";
+import { MediaType } from "../entities/media";
 import { User, UserRole } from "../entities/user";
 import { signJWT } from "../lib/jwt";
 import { sendVerificationEmail } from "../lib/mailer";
+import { deleteMediaFile, saveImage, uploadImage } from "../lib/media";
 import { checkUser } from "../middleware/checkUser";
 
 export const usersRouter = Router();
@@ -86,6 +88,24 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
   });
 
   res.json({ message: "Connecté", userId: user.id, token });
+});
+
+usersRouter.post("/avatar", checkUser, uploadImage.single("image"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "Image requise" });
+  }
+
+  const user = req.user!;
+  const media = await saveImage(req.file, MediaType.AVATAR, `avatar-${user.id}`, 400, 400, "cover");
+
+  await deleteMediaFile(user.avatar);
+  user.avatar = media;
+  await user.save();
+
+  res.status(201).json({
+    message: "Avatar enregistré",
+    media,
+  });
 });
 
 usersRouter.post("/logout", (_req, res) => {

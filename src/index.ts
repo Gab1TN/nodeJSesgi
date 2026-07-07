@@ -1,15 +1,17 @@
-import "reflect-metadata";
+﻿import "reflect-metadata";
 import express from "express";
+import path from "path";
 import cookieParser from "cookie-parser";
 import { AppDataSource } from "./datasource";
 import { usersRouter } from "./routes/users";
 import { quizzesRouter } from "./routes/quizzes";
 
 const app = express();
-const port = 3000;
+const port = Number(process.env.PORT || 3000);
 
 app.use(express.json());
 app.use(cookieParser());
+app.use("/assets", express.static(path.join(process.cwd(), "assets")));
 
 app.get("/", (_req, res) => {
   res.send("Hello, World!");

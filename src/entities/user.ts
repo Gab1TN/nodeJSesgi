@@ -1,5 +1,6 @@
-﻿import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+﻿import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { IsEmail, IsEnum, Length } from "class-validator";
+import { Media } from "./media";
 
 export enum UserRole {
   USER = "user",
@@ -39,6 +40,9 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true })
   verificationToken?: string;
+
+  @ManyToOne(() => Media, { nullable: true, eager: true })
+  avatar?: Media;
 
   @CreateDateColumn()
   createdAt: Date;

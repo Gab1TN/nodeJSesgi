@@ -1,5 +1,6 @@
 ﻿import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Length } from "class-validator";
+import { Media } from "./media";
 import { User } from "./user";
 
 @Entity("quizzes")
@@ -16,6 +17,9 @@ export class Quiz extends BaseEntity {
 
   @ManyToOne(() => User, { eager: true, onDelete: "CASCADE" })
   author: User;
+
+  @ManyToOne(() => Media, { nullable: true, eager: true })
+  image?: Media;
 
   @CreateDateColumn()
   createdAt: Date;
