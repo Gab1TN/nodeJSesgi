@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+﻿import { Resend } from "resend";
 
 const apiKey = process.env.RESEND_API_KEY;
 const from = process.env.MAIL_FROM || "onboarding@resend.dev";
@@ -17,7 +17,7 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
   await resend.emails.send({
     from,
     to,
-    subject: "Verifiez votre email",
+    subject: "Vérifiez votre email",
     html: `<p>Cliquez pour valider votre compte : <a href="${link}">${link}</a></p>`,
   });
 

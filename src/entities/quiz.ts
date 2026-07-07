@@ -1,4 +1,4 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+﻿import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Length } from "class-validator";
 import { User } from "./user";
 
@@ -7,7 +7,7 @@ export class Quiz extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Length(3, 120)
+  @Length(3, 120, { message: "Le titre doit contenir entre 3 et 120 caractères" })
   @Column()
   title: string;
 

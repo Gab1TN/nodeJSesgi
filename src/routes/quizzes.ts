@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+﻿import { Router, Request, Response } from "express";
 import { validate } from "class-validator";
 import { Quiz } from "../entities/quiz";
 import { checkUser } from "../middleware/checkUser";
@@ -13,7 +13,7 @@ quizzesRouter.get("/", async (_req, res) => {
 quizzesRouter.post("/", checkUser, async (req: Request, res: Response) => {
   const { title, description } = req.body ?? {};
   if (!title) {
-    return res.status(400).json({ message: "title requis" });
+    return res.status(400).json({ message: "Titre requis" });
   }
 
   const quiz = new Quiz();
@@ -26,7 +26,7 @@ quizzesRouter.post("/", checkUser, async (req: Request, res: Response) => {
     error.constraints ? Object.values(error.constraints) : []
   );
   if (validationErrors.length) {
-    return res.status(400).json({ message: "Validation failed", errors: validationErrors });
+    return res.status(400).json({ message: "Erreur de validation", errors: validationErrors });
   }
 
   await quiz.save();

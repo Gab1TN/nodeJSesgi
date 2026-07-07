@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+﻿import { NextFunction, Request, Response } from "express";
 import { User } from "../entities/user";
 import { verifyJWT } from "../lib/jwt";
 
@@ -16,7 +16,7 @@ export async function checkUser(req: Request, res: Response, next: NextFunction)
   const token = req.cookies?.token || bearerToken;
 
   if (!token) {
-    return res.status(401).json({ message: "Non authentifie" });
+    return res.status(401).json({ message: "Non authentifié" });
   }
 
   try {

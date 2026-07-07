@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+﻿import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { validate } from "class-validator";
 import { randomBytes } from "crypto";
@@ -12,12 +12,12 @@ export const usersRouter = Router();
 usersRouter.post("/register", async (req: Request, res: Response) => {
   const { email, password, firstName, lastName } = req.body ?? {};
   if (!email || !password) {
-    return res.status(400).json({ message: "email et password requis" });
+    return res.status(400).json({ message: "Email et mot de passe requis" });
   }
 
   const existing = await User.findOneBy({ email });
   if (existing) {
-    return res.status(409).json({ message: "Email deja utilise" });
+    return res.status(409).json({ message: "Email déjà utilisé" });
   }
 
   const user = new User();
@@ -34,7 +34,7 @@ usersRouter.post("/register", async (req: Request, res: Response) => {
     error.constraints ? Object.values(error.constraints) : []
   );
   if (validationErrors.length) {
-    return res.status(400).json({ message: "Validation failed", errors: validationErrors });
+    return res.status(400).json({ message: "Erreur de validation", errors: validationErrors });
   }
 
   user.password = await bcrypt.hash(password, 10);
@@ -44,7 +44,7 @@ usersRouter.post("/register", async (req: Request, res: Response) => {
   const { password: _, verificationToken: __, ...safe } = user;
   res.status(201).json({
     ...safe,
-    message: "Compte cree, verifiez votre email",
+    message: "Compte créé, vérifiez votre email",
     ...(verificationLink ? { verificationLink } : {}),
   });
 });
@@ -52,7 +52,7 @@ usersRouter.post("/register", async (req: Request, res: Response) => {
 usersRouter.get("/verify", async (req: Request, res: Response) => {
   const token = String(req.query.token || "");
   if (!token) {
-    return res.status(400).json({ message: "token requis" });
+    return res.status(400).json({ message: "Token requis" });
   }
 
   const user = await User.findOneBy({ verificationToken: token });
@@ -63,7 +63,7 @@ usersRouter.get("/verify", async (req: Request, res: Response) => {
   user.emailVerified = true;
   user.verificationToken = undefined;
   await user.save();
-  res.json({ message: "Email verifie" });
+  res.json({ message: "Email vérifié" });
 });
 
 usersRouter.post("/login", async (req: Request, res: Response) => {
@@ -75,7 +75,7 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
   }
 
   if (!user.emailVerified) {
-    return res.status(403).json({ message: "Email non verifie" });
+    return res.status(403).json({ message: "Email non vérifié" });
   }
 
   const token = signJWT({ id: user.id });
@@ -85,16 +85,16 @@ usersRouter.post("/login", async (req: Request, res: Response) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  res.json({ message: "Connecte", userId: user.id, token });
+  res.json({ message: "Connecté", userId: user.id, token });
 });
 
 usersRouter.post("/logout", (_req, res) => {
   res.clearCookie("token");
-  res.json({ message: "Deconnecte" });
+  res.json({ message: "Déconnecté" });
 });
 
 usersRouter.get("/public", (_req, res) => {
-  res.json({ message: "Route publique - pas besoin d etre connecte" });
+  res.json({ message: "Route publique - pas besoin d'être connecté" });
 });
 
 usersRouter.get("/me", checkUser, (req, res) => {
