@@ -6,11 +6,15 @@ import { Media, MediaType } from "../entities/media";
 
 const assetsDir = path.join(process.cwd(), "assets");
 const imageDir = path.join(assetsDir, "img");
+const MAX_IMAGE_UPLOAD_SIZE = 5 * 1024 * 1024;
 
 export const uploadImage = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024,
+    fileSize: MAX_IMAGE_UPLOAD_SIZE,
+    files: 1,
+    fields: 10,
+    parts: 11,
   },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
