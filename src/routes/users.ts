@@ -70,6 +70,10 @@ usersRouter.get("/verify", async (req: Request, res: Response) => {
 
 usersRouter.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body ?? {};
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email et mot de passe requis" });
+  }
+
   const user = await User.findOneBy({ email });
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
