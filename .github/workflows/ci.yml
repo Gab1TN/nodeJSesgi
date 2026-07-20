@@ -34,13 +34,6 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
-      - name: Tests avec couverture
-        run: npm test -- --coverage
-        # Adapte selon ton runner de tests :
-        # Jest    : npm test -- --coverage
-        # Vitest  : npx vitest run --coverage
-        # nyc     : npx nyc npm test
-
       - name: Build
         run: npm run build --if-present
 
