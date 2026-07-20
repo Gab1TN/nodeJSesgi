@@ -2,11 +2,14 @@
 import express from "express";
 import path from "path";
 import cookieParser from "cookie-parser";
+import { createServer } from "http";
 import { AppDataSource } from "./datasource";
 import { usersRouter } from "./routes/users";
 import { quizzesRouter } from "./routes/quizzes";
+import { WebSocketManager } from "./websocket-manager";
 
 const app = express();
+const server = createServer(app);
 const port = Number(process.env.PORT || 3000);
 
 app.use(express.json());
@@ -26,7 +29,9 @@ app.use((_req, res) => {
 
 AppDataSource.initialize()
   .then(() => {
-    app.listen(port, () => {
+    new WebSocketManager(server);
+
+    server.listen(port, () => {
       console.log(`Example app listening on port ${port}`);
     });
   })
