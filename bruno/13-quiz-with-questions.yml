@@ -1,0 +1,61 @@
+info:
+  name: 13 Quiz With Questions
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: http://localhost:3000/api/quizzes
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Quiz Bruno avec questions",
+        "description": "Questions et choix",
+        "questions": [
+          {
+            "label": "Capitale de la France ?",
+            "type": "single",
+            "choices": [
+              { "label": "Paris", "isCorrect": true },
+              { "label": "Lyon" }
+            ]
+          },
+          {
+            "label": "Langages JVM ?",
+            "type": "multiple",
+            "choices": [
+              { "label": "Java", "isCorrect": true },
+              { "label": "Kotlin", "isCorrect": true },
+              { "label": "Python" }
+            ]
+          },
+          {
+            "label": "Auteur du Petit Prince ?",
+            "type": "text",
+            "answer": "Saint-Exupery"
+          }
+        ]
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 201", function() {
+          expect(res.status).to.equal(201);
+        });
+        test("three questions returned", function() {
+          expect(res.body.questions).to.have.lengthOf(3);
+        });
+        test("single question has two choices", function() {
+          expect(res.body.questions[0].choices).to.have.lengthOf(2);
+        });
+        test("text question keeps its answer", function() {
+          expect(res.body.questions[2].answer).to.equal("Saint-Exupery");
+        });

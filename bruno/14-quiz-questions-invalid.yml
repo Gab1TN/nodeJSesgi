@@ -1,0 +1,40 @@
+info:
+  name: 14 Quiz Questions Invalid
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: http://localhost:3000/api/quizzes
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Quiz questions invalides",
+        "questions": [
+          {
+            "label": "Question a choix unique sans bonne reponse",
+            "type": "single",
+            "choices": [
+              { "label": "A" },
+              { "label": "B" }
+            ]
+          }
+        ]
+      }
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 400 on question validation", function() {
+          expect(res.status).to.equal(400);
+        });
+        test("error mentions the single-choice rule", function() {
+          expect(JSON.stringify(res.body.errors)).to.include("exactement 1");
+        });
