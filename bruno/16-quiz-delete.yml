@@ -1,0 +1,19 @@
+info:
+  name: 16 Quiz Delete
+  type: http
+  seq: 16
+
+http:
+  method: DELETE
+  url: http://localhost:3000/api/quizzes/{{quizId}}
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("status 204", function() {
+          expect(res.status).to.equal(204);
+        });
