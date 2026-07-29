@@ -8,11 +8,14 @@ import {
   ErrorWebSocketMessage,
   IncomingWebSocketMessage,
   OutgoingWebSocketMessage,
+  GAME_MESSAGE_TYPES,
 } from "./websocket-message.dto";
+import { GameManager } from "./game-manager";
 
 export class WebSocketManager {
   private readonly wss: WebSocketServer;
   private readonly users = new WeakMap<WebSocket, User>();
+  private readonly gameManager = new GameManager();
 
   constructor(server: Server) {
     this.wss = new WebSocketServer({ noServer: true });
@@ -47,6 +50,7 @@ export class WebSocketManager {
 
       socket.on("close", () => {
         console.log("Client WS disconnected");
+        this.gameManager.handleDisconnect(socket);
       });
     });
   }
@@ -63,9 +67,21 @@ export class WebSocketManager {
       return;
     }
 
+    const msg = input.message;
+
+    if ((GAME_MESSAGE_TYPES as readonly string[]).includes(msg.type)) {
+      await this.handleGameMessage(msg, socket, user);
+      return;
+    }
+
+    if (!msg.content) {
+      await this.sendError(socket, ["Le contenu est requis pour les messages de type 'message'"]);
+      return;
+    }
+
     const output = new OutgoingWebSocketMessage();
     output.type = "message";
-    output.content = input.message.content;
+    output.content = msg.content;
     output.senderEmail = user.email;
     output.sentAt = new Date().toISOString();
 
@@ -76,6 +92,45 @@ export class WebSocketManager {
     }
 
     this.broadcast(JSON.stringify(output), socket);
+  }
+
+  private async handleGameMessage(msg: IncomingWebSocketMessage, socket: WebSocket, user: User) {
+    switch (msg.type) {
+      case "create_room":
+        if (!msg.quizId) {
+          await this.sendError(socket, ["quizId est requis"]);
+          return;
+        }
+        await this.gameManager.createRoom(msg.quizId, socket, user);
+        break;
+
+      case "join_room":
+        if (!msg.code) {
+          await this.sendError(socket, ["code est requis"]);
+          return;
+        }
+        this.gameManager.joinRoom(msg.code, socket, user);
+        break;
+
+      case "start_game":
+        if (!msg.code) {
+          await this.sendError(socket, ["code est requis"]);
+          return;
+        }
+        this.gameManager.startGame(msg.code, socket);
+        break;
+
+      case "submit_answer":
+        if (!msg.code || !msg.questionId) {
+          await this.sendError(socket, ["code et questionId sont requis"]);
+          return;
+        }
+        this.gameManager.submitAnswer(msg.code, socket, msg.questionId, {
+          choiceIds: msg.choiceIds,
+          textAnswer: msg.textAnswer,
+        });
+        break;
+    }
   }
 
   private async parseAndValidateInput(message: RawData) {
@@ -90,10 +145,22 @@ export class WebSocketManager {
       };
     }
 
+    if (typeof body !== "object" || body === null) {
+      return {
+        valid: false as const,
+        errors: ["Le message doit être un objet JSON"],
+      };
+    }
+
+    const raw = body as Record<string, unknown>;
     const input = new IncomingWebSocketMessage();
-    input.type = typeof body === "object" && body !== null ? (body as IncomingWebSocketMessage).type : undefined!;
-    input.content =
-      typeof body === "object" && body !== null ? (body as IncomingWebSocketMessage).content : undefined!;
+    input.type = raw.type as string;
+    input.content = raw.content as string | undefined;
+    input.quizId = raw.quizId as number | undefined;
+    input.code = raw.code as string | undefined;
+    input.questionId = raw.questionId as number | undefined;
+    input.choiceIds = raw.choiceIds as number[] | undefined;
+    input.textAnswer = raw.textAnswer as string | undefined;
 
     const errors = await this.validateMessage(input);
     if (errors.length) {

@@ -1,6 +1,8 @@
 ﻿import "reflect-metadata";
 import { DataSource } from "typeorm";
+import { Choice } from "./entities/choice";
 import { Media } from "./entities/media";
+import { Question } from "./entities/question";
 import { Quiz } from "./entities/quiz";
 import { User } from "./entities/user";
 
@@ -13,5 +15,5 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || "nodejsesgi",
   synchronize: true,
   logging: true,
-  entities: [User, Quiz, Media],
+  entities: [User, Quiz, Media, Question, Choice],
 });

@@ -1,12 +1,38 @@
-import { IsEmail, IsIn, IsISO8601, IsString, Length } from "class-validator";
+import { IsEmail, IsIn, IsISO8601, IsString, IsInt, IsOptional, IsArray, Length } from "class-validator";
+
+export const GAME_MESSAGE_TYPES = ["create_room", "join_room", "start_game", "submit_answer"] as const;
+export const ALL_MESSAGE_TYPES = ["message", ...GAME_MESSAGE_TYPES] as const;
 
 export class IncomingWebSocketMessage {
-  @IsIn(["message"], { message: "Le type de message doit être 'message'" })
+  @IsIn([...ALL_MESSAGE_TYPES], { message: `Le type de message doit être parmi : ${ALL_MESSAGE_TYPES.join(", ")}` })
   type: string;
 
+  @IsOptional()
   @IsString({ message: "Le contenu doit être une chaîne de caractères" })
   @Length(1, 500, { message: "Le contenu doit contenir entre 1 et 500 caractères" })
-  content: string;
+  content?: string;
+
+  @IsOptional()
+  @IsInt({ message: "quizId doit être un entier" })
+  quizId?: number;
+
+  @IsOptional()
+  @IsString({ message: "code doit être une chaîne de caractères" })
+  @Length(6, 6, { message: "Le code de room doit contenir 6 caractères" })
+  code?: string;
+
+  @IsOptional()
+  @IsInt({ message: "questionId doit être un entier" })
+  questionId?: number;
+
+  @IsOptional()
+  @IsArray({ message: "choiceIds doit être un tableau" })
+  @IsInt({ each: true, message: "Chaque choiceId doit être un entier" })
+  choiceIds?: number[];
+
+  @IsOptional()
+  @IsString({ message: "textAnswer doit être une chaîne de caractères" })
+  textAnswer?: string;
 }
 
 export class OutgoingWebSocketMessage {
