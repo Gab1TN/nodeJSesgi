@@ -21,6 +21,26 @@ function flattenErrors(errors: ValidationError[]): string[] {
 type ChoiceInput = { label?: string; isCorrect?: boolean };
 type QuestionInput = { label?: string; type?: string; answer?: string; choices?: ChoiceInput[] };
 
+async function findAuthorQuiz(quizId: number, userId: number) {
+  const quiz = await Quiz.findOne({
+    where: { id: quizId },
+    relations: {
+      author: true,
+      image: true,
+    },
+  });
+
+  if (!quiz) {
+    return { status: 404, message: "Quiz introuvable" };
+  }
+
+  if (quiz.author.id !== userId) {
+    return { status: 403, message: "Vous ne pouvez pas modifier ce quiz" };
+  }
+
+  return { quiz };
+}
+
 // Construit les questions/choix depuis le payload et vérifie les règles par type.
 // Retourne les questions prêtes à sauvegarder, ou la liste des erreurs métier.
 function buildQuestions(input: unknown): { questions: Question[]; errors: string[] } {
@@ -132,33 +152,87 @@ quizzesRouter.post("/", checkUser, async (req: Request, res: Response) => {
   res.status(201).json(serializeQuiz(quiz, true));
 });
 
+quizzesRouter.put("/:id", checkUser, async (req: Request, res: Response) => {
+  const quizId = Number(req.params.id);
+  if (Number.isNaN(quizId)) {
+    return res.status(400).json({ message: "Identifiant invalide" });
+  }
+
+  const result = await findAuthorQuiz(quizId, req.user!.id);
+  if (!result.quiz) {
+    return res.status(result.status).json({ message: result.message });
+  }
+
+  const { title, description, questions } = req.body ?? {};
+  if (!title) {
+    return res.status(400).json({ message: "Titre requis" });
+  }
+
+  const { questions: builtQuestions, errors: questionErrors } = buildQuestions(questions);
+
+  result.quiz.title = title;
+  result.quiz.description = description;
+  if (questions !== undefined) {
+    result.quiz.questions = builtQuestions;
+  }
+
+  const errors = await validate(result.quiz, { validationError: { target: false } });
+  const allErrors = [...flattenErrors(errors), ...questionErrors];
+  if (allErrors.length) {
+    return res.status(400).json({ message: "Erreur de validation", errors: allErrors });
+  }
+
+  if (questions !== undefined) {
+    await Question.createQueryBuilder()
+      .delete()
+      .from(Question)
+      .where('"quizId" = :quizId', { quizId: result.quiz.id })
+      .execute();
+  }
+
+  await result.quiz.save();
+  res.json(serializeQuiz(result.quiz, true));
+});
+
+quizzesRouter.delete("/:id", checkUser, async (req: Request, res: Response) => {
+  const quizId = Number(req.params.id);
+  if (Number.isNaN(quizId)) {
+    return res.status(400).json({ message: "Identifiant invalide" });
+  }
+
+  const result = await findAuthorQuiz(quizId, req.user!.id);
+  if (!result.quiz) {
+    return res.status(result.status).json({ message: result.message });
+  }
+
+  const image = result.quiz.image;
+  await result.quiz.remove();
+  await deleteMediaFile(image);
+
+  res.status(204).send();
+});
+
 quizzesRouter.post("/:id/image", checkUser, uploadImage.single("image"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "Image requise" });
   }
 
   const quizId = Number(req.params.id);
-  const quiz = await Quiz.findOne({
-    where: { id: quizId },
-    relations: {
-      author: true,
-      image: true,
-    },
-  });
-
-  if (!quiz) {
-    return res.status(404).json({ message: "Quiz introuvable" });
+  if (Number.isNaN(quizId)) {
+    return res.status(400).json({ message: "Identifiant invalide" });
   }
 
-  if (quiz.author.id !== req.user!.id) {
-    return res.status(403).json({ message: "Vous ne pouvez pas modifier ce quiz" });
+  const result = await findAuthorQuiz(quizId, req.user!.id);
+  if (!result.quiz) {
+    return res.status(result.status).json({ message: result.message });
   }
 
-  const media = await saveImage(req.file, MediaType.QUIZ, `quiz-${quiz.id}`, 1200, 1200, "inside");
+  const media = await saveImage(req.file, MediaType.QUIZ, `quiz-${result.quiz.id}`, 1200, 1200, "inside");
+  const oldImage = result.quiz.image;
 
-  await deleteMediaFile(quiz.image);
-  quiz.image = media;
-  await quiz.save();
+  result.quiz.image = media;
+  await result.quiz.save();
+  await deleteMediaFile(oldImage);
 
   res.status(201).json({
     message: "Image du quiz enregistrée",
